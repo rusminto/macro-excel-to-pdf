@@ -2,29 +2,29 @@
 
 Example of implementation macro to:  
 1. get data from excel
-  ```vba
-  Dim wb As Workbook
-  Set wb = ActiveWorkbook
-
-  Dim ws As Worksheet
-  Set ws = wb.Sheets("Sheet1")
-  
-  n = ws.Range("A:A").Find(what:="*", searchdirection:=xlPrevious).Row
-  
-  for j = 2 To n
-    nama = ws.Range("A" & j).Value
-  Next
-  ```
+   ```vba
+   Dim wb As Workbook
+   Set wb = ActiveWorkbook
+   
+   Dim ws As Worksheet
+   Set ws = wb.Sheets("Sheet1")
+   
+   n = ws.Range("A:A").Find(what:="*", searchdirection:=xlPrevious).Row
+   
+   for j = 2 To n
+     nama = ws.Range("A" & j).Value
+   Next
+   ```
 2. insert excel's data to microsoft word'template
-  ```vba
-  Set wordApp = CreateObject("Word.Application")
-  
-  Set wordDoc = wordApp.Documents.Open("D:\stechoq\pdfPassword\template2.docx")
-  
-  With wordDoc.Content.Find
+   ```vba
+   Set wordApp = CreateObject("Word.Application")
+   
+   Set wordDoc = wordApp.Documents.Open("D:\stechoq\pdfPassword\template2.docx")
+   
+   With wordDoc.Content.Find
       .Execute FindText:="<<nama>>", ReplaceWith:=nama, Replace:=wdReplaceAll
-  End With
-  ```
+   End With
+   ```
 3. export word to pdf
    ```vba
    rawPdf = "D:\stechoq\pdfPassword\" & ws.Range("A" & j).Value & "_raw.pdf"
