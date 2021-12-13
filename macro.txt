@@ -1,0 +1,87 @@
+'https://stackoverflow.com/questions/57629148/how-to-use-vba-to-insert-excel-data-into-word-and-export-it-as-pdf
+'https://www.excelnoob.com/cara-export-file-pdf-dengan-password-dengan-excel-vba/
+
+Sub createPDF()
+    Dim wb As Workbook
+    Set wb = ActiveWorkbook
+
+    Dim ws As Worksheet
+    Set ws = wb.Sheets("Sheet1")
+    
+    'sets up the framework for using Word
+    Dim wordApp As Object
+    Dim wordDoc As Object
+    Dim nama, email, keterangan, password As String
+    Dim rawPdf, passwordedPdf, cmdStr As String
+    
+    Dim n, j As Integer
+    
+    Set wordApp = CreateObject("Word.Application")
+    
+    'now we begin the loop for the mailing sheet that is being used
+
+    n = ws.Range("A:A").Find(what:="*", searchdirection:=xlPrevious).Row
+
+    For j = 2 To n
+    
+        'first we choose which word doc gets used
+        'opens the word doc that has the template  for sending out
+
+        Set wordDoc = wordApp.Documents.Open("D:\stechoq\pdfPassword\template2.docx")
+        
+        'collects the  strings needed for the document
+        nama = ws.Range("A" & j).Value
+        email = ws.Range("B" & j).Value
+        keterangan = ws.Range("C" & j).Value
+        password = ws.Range("D" & j).Value
+        
+        'fills in the word doc with the missing fields
+        With wordDoc.Content.Find
+            .Execute FindText:="<<nama>>", ReplaceWith:=nama, Replace:=wdReplaceAll
+            .Execute FindText:="<<email>>", ReplaceWith:=email, Replace:=wdReplaceAll
+            .Execute FindText:="<<keterangan>>", ReplaceWith:=keterangan, Replace:=wdReplaceAll
+            .Execute FindText:="<<password>>", ReplaceWith:=password, Replace:=wdReplaceAll
+        End With
+        
+        ' this section saves the word doc in the folder as a pdf
+        rawPdf = "D:\stechoq\pdfPassword\" & ws.Range("A" & j).Value & "_raw.pdf"
+        passwordedPdf = "D:\stechoq\pdfPassword\" & ws.Range("A" & j).Value & ".pdf"
+        
+        wordDoc.ExportAsFixedFormat rawPdf, _
+                wdExportFormatPDF
+        
+        'need to close word now that it has been opened before the next loop
+        wordDoc.Close (wdDoNotSaveChanges)
+        
+    Next
+    
+    'create object to wait command till finish
+    Dim wsh As Object
+    Set wsh = VBA.CreateObject("WScript.Shell")
+    Dim waitOnReturn As Boolean: waitOnReturn = True
+    Dim windowStyle As Integer: windowStyle = 1
+    
+    For j = 2 To n
+    
+        'collects the  strings needed for the document
+        password = ws.Range("D" & j).Value
+    
+        ' this section saves the word doc in the folder as a pdf
+        rawPdf = "D:\stechoq\pdfPassword\" & ws.Range("A" & j).Value & "_raw.pdf"
+        passwordedPdf = "D:\stechoq\pdfPassword\" & ws.Range("A" & j).Value & ".pdf"
+        
+        'add password to pdf
+        fTemp = """" & rawPdf & """"
+        oPdf = """" & passwordedPdf & """"
+        pwd = """" & password & """"
+                                                              
+        cmdStr = "pdftk " & fTemp _
+                          & " Output " & oPdf _
+                          & " User_pw " & pwd _
+                          & " Allow AllFeatures"
+        Debug.Print cmdStr
+        wsh.Run "cmd.exe /S /C " & cmdStr, windowStyle, waitOnReturn
+        
+        Kill Replace(fTemp, """", "")
+    Next
+End Sub
