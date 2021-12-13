@@ -2,6 +2,14 @@
 'https://www.excelnoob.com/cara-export-file-pdf-dengan-password-dengan-excel-vba/
 
 Sub createPDF()
+
+    'create object to wait command till finish
+    Dim wsh As Object
+    Set wsh = VBA.CreateObject("WScript.Shell")
+    Dim waitOnReturn As Boolean: waitOnReturn = True
+    Dim windowStyle As Integer: windowStyle = 1
+    
+    
     Dim wb As Workbook
     Set wb = ActiveWorkbook
 
@@ -53,22 +61,6 @@ Sub createPDF()
         'need to close word now that it has been opened before the next loop
         wordDoc.Close (wdDoNotSaveChanges)
         
-    Next
-    
-    'create object to wait command till finish
-    Dim wsh As Object
-    Set wsh = VBA.CreateObject("WScript.Shell")
-    Dim waitOnReturn As Boolean: waitOnReturn = True
-    Dim windowStyle As Integer: windowStyle = 1
-    
-    For j = 2 To n
-    
-        'collects the  strings needed for the document
-        password = ws.Range("D" & j).Value
-    
-        ' this section saves the word doc in the folder as a pdf
-        rawPdf = "D:\stechoq\pdfPassword\" & ws.Range("A" & j).Value & "_raw.pdf"
-        passwordedPdf = "D:\stechoq\pdfPassword\" & ws.Range("A" & j).Value & ".pdf"
         
         'add password to pdf
         fTemp = """" & rawPdf & """"
@@ -79,9 +71,12 @@ Sub createPDF()
                           & " Output " & oPdf _
                           & " User_pw " & pwd _
                           & " Allow AllFeatures"
+
+	'ctrl+g to debug
         Debug.Print cmdStr
         wsh.Run "cmd.exe /S /C " & cmdStr, windowStyle, waitOnReturn
         
         Kill Replace(fTemp, """", "")
+        
     Next
 End Sub
